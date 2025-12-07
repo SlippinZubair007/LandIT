@@ -13,7 +13,6 @@ export const BarChart: React.FC<BarChartProps> = ({ data }) => {
   const maxValue =
     Math.max(data.questions, data.correct, data.incorrect) || 1;
 
-  const scale = (100 / maxValue);
   
 
  return (

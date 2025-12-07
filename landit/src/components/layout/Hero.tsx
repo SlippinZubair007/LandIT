@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Container } from '../ui/Container';
 import { useTheme } from '../common/ThemeContext';
 import {HeroProps} from '../../types/index'
-import {Heading,Paragraph,Text} from '../common/text/index'
+import {Heading,Paragraph} from '../common/text/index'
 
 export const Hero: React.FC<HeroProps> = ({ title, subtitle, description, cta }) => {
   const { isDark } = useTheme();

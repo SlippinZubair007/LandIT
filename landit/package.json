@@ -2,12 +2,13 @@
   "name": "landit",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint"
+}
+  ,
   "dependencies": {
     "@clerk/nextjs": "^6.36.0",
     "@radix-ui/react-slot": "^1.2.4",
