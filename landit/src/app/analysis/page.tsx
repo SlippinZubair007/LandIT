@@ -1,7 +1,4 @@
-
-
-"use client";
-export const dynamic = "force-dynamic";
+"use client"; // MUST be the first line
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -13,6 +10,8 @@ import { ItemList } from '@/components/analysis/ItemList';
 import { KeywordBadges } from '@/components/analysis/KeywordBadges';
 import { SuggestionCard } from '@/components/analysis/SuggestionCard';
 import { LoadingState } from '@/components/analysis/LoadState';
+
+export const dynamic = "force-dynamic"; // can stay after "use client"
 
 export default function AnalysisPage() {
   const searchParams = useSearchParams();
