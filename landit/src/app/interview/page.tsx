@@ -25,17 +25,19 @@ export default function InterviewPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-700 via-purple-200 to-white dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300">
         <div className="text-gray-600">Please sign in to access interviews</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-b from-purple-700 via-purple-200 to-white dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300">
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-6 py-8 -mt-6">
         {activeInterviewId ? (
           <InterviewSession
             interviewId={activeInterviewId}

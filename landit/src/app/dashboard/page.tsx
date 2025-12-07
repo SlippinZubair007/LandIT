@@ -42,7 +42,8 @@ export default function DashboardPage() {
       : { questionsAttempted: 1, interviewsTaken: 1, resumeUploaded: 1 };
 
   return (
-    <div className="min-h-screen bg-purple-200">
+    <div className="min-h-screen -mt-6  bg-gradient-to-b from-purple-500 via-purple-200 to-white dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <DashboardHeader />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

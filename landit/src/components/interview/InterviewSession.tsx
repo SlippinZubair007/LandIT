@@ -1,7 +1,7 @@
 // ============================================
 // FILE PATH: src/components/interview/InterviewSession.tsx
 // ============================================
-// Fixed VAPI initialization - matches your .env.local
+// Fixed VAPI initialization and duration/questions tracking
 
 "use client";
 
@@ -37,6 +37,10 @@ export default function InterviewSession({
 
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const vapiRef = useRef<any>(null);
+  
+  // Use refs to track actual values for saving
+  const durationRef = useRef(0);
+  const questionsAskedRef = useRef(0);
 
   // Initialize VAPI
   useEffect(() => {
@@ -61,9 +65,14 @@ export default function InterviewSession({
           setIsRecording(true);
           startInterviewMutation({ interviewId });
           
+          // Reset refs
+          durationRef.current = 0;
+          questionsAskedRef.current = 0;
+          
           // Start duration timer
           durationIntervalRef.current = setInterval(() => {
-            setDuration((prev) => prev + 1);
+            durationRef.current += 1;
+            setDuration(durationRef.current);
           }, 1000);
         });
 
@@ -75,11 +84,16 @@ export default function InterviewSession({
             clearInterval(durationIntervalRef.current);
           }
 
-          // Complete interview
+          console.log("Final interview data:", {
+            duration: durationRef.current,
+            questionsAsked: questionsAskedRef.current
+          });
+
+          // Complete interview with ref values to ensure we have latest data
           await completeInterviewMutation({
             interviewId,
-            duration,
-            questionsAsked,
+            duration: durationRef.current,
+            questionsAsked: questionsAskedRef.current,
           });
 
           // Generate feedback
@@ -108,14 +122,16 @@ export default function InterviewSession({
           
           if (message.type === "transcript" && message.role === "assistant") {
             setCurrentMessage(message.transcript);
-            setQuestionsAsked((prev) => prev + 1);
+            questionsAskedRef.current += 1;
+            setQuestionsAsked(questionsAskedRef.current);
+            console.log("Question asked, total:", questionsAskedRef.current);
           }
 
           if (message.type === "transcript" && message.role === "user") {
             // Save Q&A pair
             saveQuestionMutation({
               interviewId,
-              questionNumber: questionsAsked + 1,
+              questionNumber: questionsAskedRef.current,
               question: currentMessage,
               userAnswer: message.transcript,
             });
@@ -148,7 +164,7 @@ export default function InterviewSession({
       return;
     }
 
-    // FIXED: Use WORKFLOW_ID instead of ASSISTANT_ID
+    // Use WORKFLOW_ID instead of ASSISTANT_ID
     const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID;
     if (!workflowId) {
       alert("VAPI workflow not configured. Please check your environment variables.");
@@ -250,7 +266,7 @@ export default function InterviewSession({
             <li>• Answer each question clearly and concisely</li>
             <li>• Take your time to think before responding</li>
             <li>• Provide specific examples when possible</li>
-            <li>• The AI will ask 3-5 questions</li>
+        
           </ul>
         </div>
       )}

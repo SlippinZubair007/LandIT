@@ -30,7 +30,7 @@ export const createResume = mutation({
   },
 });
 
-// Get resumes - FIXED with optional jobDescriptionId
+// Get resumes by job
 export const getResumesByJob = query({
   args: {
     userId: v.string(),
@@ -81,13 +81,29 @@ export const saveAnalysis = mutation({
   },
 });
 
+// Get analysis by resume ID
+export const getAnalysisByResumeId = query({
+  args: {
+    resumeId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const analysis = await ctx.db
+      .query("resumeAnalyses")
+      .withIndex("by_resume", (q) => q.eq("resumeId", args.resumeId))
+      .first();
+    return analysis;
+  },
+});
+
+// Main AI Analysis Action
 export const analyzeResumeWithAI = action({
   args: {
     resumeId: v.string(),
     resumeText: v.string(),
     jobDescriptionId: v.string(),
   },
-  handler: async (ctx: any, args: any): Promise<{ analysisId: string; result: any }> => {
+  handler: async (ctx, args): Promise<{ analysisId: string; result: any }> => {
+    // Get job description
     const jobDesc = await ctx.runQuery(api.jobDescriptions.getJobDescriptionById, {
       id: args.jobDescriptionId as any,
     });
@@ -119,7 +135,8 @@ export const analyzeResumeWithAI = action({
       throw new Error("Resume text is empty");
     }
 
-    const prompt = `You are a resume analyzer. Analyze the following resume against the job description.
+    // IMPROVED PROMPT
+    const prompt = `Analyze this resume against the job description and return ONLY valid JSON.
 
 Job Title: ${jobTitle}
 Company: ${company}
@@ -130,15 +147,21 @@ Requirements: ${requirements}
 Resume:
 ${resumeText}
 
-CRITICAL: Return ONLY a valid JSON object. Do not include any text before or after the JSON. Do not use markdown code blocks.
+CRITICAL INSTRUCTIONS:
+1. Return ONLY the JSON object below
+2. NO markdown, NO code blocks, NO explanations
+3. NO text before or after the JSON
+4. Ensure all strings are properly quoted
+5. NO trailing commas
+6. All scores must be integers 0-100
 
-Required JSON format:
+Return this exact structure:
 {
   "score": 85,
   "atsCompatibility": {
     "score": 80,
     "issues": ["Issue 1", "Issue 2"],
-    "recommendations": ["Recommendation 1", "Recommendation 2"]
+    "recommendations": ["Rec 1", "Rec 2"]
   },
   "jobMatch": {
     "score": 75,
@@ -148,31 +171,24 @@ Required JSON format:
   "writingFormatting": {
     "score": 90,
     "issues": ["Issue 1", "Issue 2"],
-    "recommendations": ["Recommendation 1", "Recommendation 2"]
+    "recommendations": ["Rec 1", "Rec 2"]
   },
   "contentAnalysis": {
     "keywords": ["Keyword1", "Keyword2", "Keyword3"]
   },
   "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"]
-}
-
-IMPORTANT: 
-- All strings must be properly escaped
-- No trailing commas
-- All arrays must have at least one item or be empty []
-- Scores must be numbers between 0-100
-- Return ONLY the JSON object, nothing else`;
+}`;
 
     try {
-      // Check if API key exists (from Convex environment)
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        throw new Error("GEMINI_API_KEY is not configured in Convex. Run: npx convex env set GEMINI_API_KEY your_key");
+        throw new Error("GEMINI_API_KEY not configured. Run: npx convex env set GEMINI_API_KEY your_key");
       }
 
-      // Use gemini-2.5-flash with v1beta (matching your working code)
+      console.log("Starting Gemini API call...");
+
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -181,8 +197,9 @@ IMPORTANT:
               parts: [{ text: prompt }]
             }],
             generationConfig: {
-              temperature: 0.3,
+              temperature: 0.2,
               maxOutputTokens: 5000,
+              responseMimeType: "application/json",
             },
           }),
         }
@@ -190,13 +207,11 @@ IMPORTANT:
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error("Gemini API Error Response:", errorBody);
+        console.error("Gemini API Error:", errorBody);
         
-        // Try to parse error details
         try {
           const errorJson = JSON.parse(errorBody);
-          const errorMsg = errorJson?.error?.message || errorBody;
-          throw new Error(`Gemini API (${response.status}): ${errorMsg}`);
+          throw new Error(`Gemini API error: ${errorJson?.error?.message || errorBody}`);
         } catch {
           throw new Error(`Gemini API error ${response.status}: ${errorBody.slice(0, 200)}`);
         }
@@ -205,93 +220,118 @@ IMPORTANT:
       const data = await response.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
 
-      console.log("Raw AI Response:", text);
+      console.log("=== RAW AI RESPONSE ===");
+      console.log(text.substring(0, 500));
+      console.log("======================");
 
-      // Extract JSON from response with better cleaning
-      let jsonStr = text;
+      // IMPROVED JSON EXTRACTION
+      let jsonStr = text.trim();
       
-      // Remove markdown code blocks if present
-      jsonStr = jsonStr.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      // Remove markdown
+      jsonStr = jsonStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
       
-      // Find the JSON object
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        console.error("No JSON found in response:", text);
-        throw new Error("No JSON found in AI response");
+      // Extract JSON object
+      const firstBrace = jsonStr.indexOf('{');
+      const lastBrace = jsonStr.lastIndexOf('}');
+      
+      if (firstBrace === -1 || lastBrace === -1) {
+        throw new Error("No JSON object found in AI response");
       }
+      
+      jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+
+      // Fix common JSON issues
+      const fixJSON = (str: string): string => {
+        return str
+          .replace(/,(\s*[}\]])/g, '$1') // trailing commas
+          .replace(/'/g, '"') // single quotes
+          .replace(/"([^"]*)\n([^"]*)"/g, '"$1 $2"') // newlines in strings
+          .replace(/"\s*\n\s*"/g, '",\n"'); // missing commas
+      };
 
       let result;
-      try {
-        // Try to parse the JSON
-        result = JSON.parse(jsonMatch[0]);
-      } catch (parseError) {
-        console.error("JSON Parse Error:", parseError);
-        console.error("Attempted to parse:", jsonMatch[0]);
-        
-        // Try to fix common JSON issues
+      let attempts = 0;
+
+      // Try parsing with multiple strategies
+      while (attempts < 3) {
         try {
-          // Remove trailing commas
-          const fixed = jsonMatch[0]
-            .replace(/,(\s*[}\]])/g, '$1')
-            // Fix unescaped quotes in strings
-            .replace(/:\s*"([^"]*)"([^,}\]]*)/g, (match: string, p1: string, p2: string) => {
-              if (p2.includes('"')) {
-                return `: "${p1}${p2.replace(/"/g, '\\"')}"`;
-              }
-              return match;
-            });
-          
-          result = JSON.parse(fixed);
-          console.log("Successfully parsed after fixing");
-        } catch (fixError) {
-          console.error("Could not fix JSON:", fixError);
-          throw new Error("Invalid JSON response from AI - could not parse or fix");
+          if (attempts === 0) {
+            result = JSON.parse(jsonStr);
+            console.log("✓ Parsed successfully");
+          } else if (attempts === 1) {
+            result = JSON.parse(fixJSON(jsonStr));
+            console.log("✓ Parsed after fixes");
+          } else {
+            // Aggressive cleaning
+            const aggressive = jsonStr
+              .replace(/,(\s*[}\]])/g, '$1')
+              .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3')
+              .replace(/:\s*'([^']*)'/g, ': "$1"')
+              .replace(/\n/g, ' ')
+              .replace(/\r/g, '')
+              .replace(/\t/g, ' ');
+            result = JSON.parse(aggressive);
+            console.log("✓ Parsed after aggressive cleaning");
+          }
+          break;
+        } catch (err) {
+          attempts++;
+          if (attempts >= 3) {
+            console.error("Failed to parse JSON:", err);
+            console.error("Attempted:", jsonStr.substring(0, 300));
+            throw new Error(`Invalid JSON after ${attempts} attempts: ${err}`);
+          }
         }
       }
 
+      // Validate result
       if (!result || typeof result !== 'object') {
-        console.error("Result is not an object:", result);
-        throw new Error("Invalid JSON response from AI");
+        throw new Error("Parsed result is not a valid object");
       }
 
-      // Ensure all required fields exist
+      // Normalize and validate
       const validatedResult = {
-        score: result.score || 0,
+        score: Number(result.score) || 0,
         atsCompatibility: {
-          score: result.atsCompatibility?.score || 0,
+          score: Number(result.atsCompatibility?.score) || 0,
           issues: Array.isArray(result.atsCompatibility?.issues) 
-            ? result.atsCompatibility.issues 
-            : [],
+            ? result.atsCompatibility.issues.filter((i: any) => i && typeof i === 'string')
+            : ["No issues detected"],
           recommendations: Array.isArray(result.atsCompatibility?.recommendations)
-            ? result.atsCompatibility.recommendations
-            : [],
+            ? result.atsCompatibility.recommendations.filter((r: any) => r && typeof r === 'string')
+            : ["No recommendations"],
         },
         jobMatch: {
-          score: result.jobMatch?.score || 0,
+          score: Number(result.jobMatch?.score) || 0,
           strengths: Array.isArray(result.jobMatch?.strengths)
-            ? result.jobMatch.strengths
-            : [],
+            ? result.jobMatch.strengths.filter((s: any) => s && typeof s === 'string')
+            : ["No strengths identified"],
           gaps: Array.isArray(result.jobMatch?.gaps)
-            ? result.jobMatch.gaps
-            : [],
+            ? result.jobMatch.gaps.filter((g: any) => g && typeof g === 'string')
+            : ["No gaps identified"],
         },
         writingFormatting: {
-          score: result.writingFormatting?.score || 0,
+          score: Number(result.writingFormatting?.score) || 0,
           issues: Array.isArray(result.writingFormatting?.issues)
-            ? result.writingFormatting.issues
-            : [],
+            ? result.writingFormatting.issues.filter((i: any) => i && typeof i === 'string')
+            : ["No issues detected"],
           recommendations: Array.isArray(result.writingFormatting?.recommendations)
-            ? result.writingFormatting.recommendations
-            : [],
+            ? result.writingFormatting.recommendations.filter((r: any) => r && typeof r === 'string')
+            : ["No recommendations"],
         },
         contentAnalysis: {
           keywords: Array.isArray(result.contentAnalysis?.keywords)
-            ? result.contentAnalysis.keywords
-            : [],
+            ? result.contentAnalysis.keywords.filter((k: any) => k && typeof k === 'string')
+            : ["No keywords extracted"],
         },
-        suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
+        suggestions: Array.isArray(result.suggestions) 
+          ? result.suggestions.filter((s: any) => s && typeof s === 'string')
+          : ["No suggestions available"],
       };
 
+      console.log("✓ Validation complete");
+
+      // Save to database
       const analysisId = await ctx.runMutation(api.resume.saveAnalysis, {
         resumeId: args.resumeId,
         analysisData: JSON.stringify(validatedResult),
@@ -301,23 +341,11 @@ IMPORTANT:
       });
 
       return { analysisId, result: validatedResult };
+      
     } catch (err) {
-      console.error("AI Analysis Error:", err);
-      const errorMessage = (err instanceof Error) ? err.message : String(err);
-      throw new Error("Analysis failed: " + errorMessage);
+      console.error("=== AI ANALYSIS ERROR ===");
+      console.error(err);
+      throw new Error(`Analysis failed: ${err instanceof Error ? err.message : String(err)}`);
     }
-  },
-});
-
-export const getAnalysisByResumeId = query({
-  args: {
-    resumeId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const analysis = await ctx.db
-      .query("resumeAnalyses")
-      .withIndex("by_resume", (q) => q.eq("resumeId", args.resumeId))
-      .first();
-    return analysis;
   },
 });

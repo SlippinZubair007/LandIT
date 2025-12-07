@@ -49,12 +49,13 @@ export default function QuestionsPage() {
 
   if (!jobDescription) {
     return (
-      <div className="min-h-screen bg-purple-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-700 via-purple-200 to-white flex dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300 items-center justify-center -mt-6">
         <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-300 mb-4">
             No Job Description Found
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Please create a job description first to generate relevant questions.
           </p>
           <Button onClick={() => (window.location.href = "/dashboard")}>
@@ -66,19 +67,20 @@ export default function QuestionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-purple-100">
-      <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-purple-700 via-purple-200 to-white dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300">
+      <div className="max-w-4xl mx-auto px-6 py-8 -mt-6">
         <div className="mb-8">
           <button
             onClick={() => (window.location.href = "/dashboard")}
-            className="flex items-center gap-2 text-gray-700 mb-4 hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-800 mb-4 dark:text-gray-300 hover:text-gray-900"
           >
             <span>←</span> Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-300 mb-2">
             Practice Questions
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-800 dark:text-gray-300">
             {jobDescription.title} - Test your knowledge
           </p>
         </div>

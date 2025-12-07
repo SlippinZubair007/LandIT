@@ -6,12 +6,11 @@ const HeroSection = () => {
   return (
     <section className="pt-24 pb-20 px-6 -mt-5 bg-gradient-to-b from-purple-500 via-purple-200 to-white :dark:from-purple-900 dark:to-purple-700  transition-colors duration-300">
       <div className="max-w-4xl mx-auto text-center">
-        <Heading className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 leading-tight">
-          Land your dream job with{' '}
-          <span className="text-blue-800 ">AI-powered</span>
-          <br />
-          job preparation
-        </Heading>
+       <Heading className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 leading-tight">
+        <div>Land your dream job with{' '}
+        <span className="text-blue-800">AI-powered</span></div>
+       <div className="text-center">job preparation</div>
+       </Heading>
         <Paragraph className="text-lg md:text-xl mt-8 text-gray-800 mb-14 max-w-3xl mx-auto leading-relaxed">
           Skip the guesswork and accelerate your job search.
           Our AI platform eliminates interview anxiety, optimizes your resume, and gives you the technical edge to land offers faster.
