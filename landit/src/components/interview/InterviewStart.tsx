@@ -43,7 +43,7 @@ export default function InterviewStart({
     <div className="flex flex-col items-center justify-center min-h-[70vh]">
       {/* Video Icon */}
       <div className="mb-8">
-        <div className="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center shadow-xl">
+        <div className="w-24 h-24 bg-gray-900  rounded-full flex items-center justify-center shadow-xl">
           <Video className="w-12 h-12 text-white" />
         </div>
       </div>
@@ -69,8 +69,8 @@ export default function InterviewStart({
       )}
 
       {/* Tips */}
-      <div className="mt-12 max-w-md text-center space-y-3 text-sm text-gray-600">
-        <p className="font-medium text-gray-700">Tips for a great interview:</p>
+      <div className="mt-12 max-w-md text-center space-y-3 text-sm text-gray-600 dark:text-gray-300">
+        <p className="font-medium text-gray-700 dark:text-gray-300">Tips for a great interview:</p>
         <ul className="space-y-2">
           <li>✓ Find a quiet place with good lighting</li>
           <li>✓ Test your microphone before starting</li>

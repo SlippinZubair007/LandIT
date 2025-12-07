@@ -48,13 +48,13 @@ export default function InterviewHistory({ history, onBack }: InterviewHistoryPr
       <div className="mb-8">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 transition-colors mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back</span>
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Interview History</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-300">Interview History</h1>
+        <p className="text-gray-700 dark:text-gray-300 mt-2">
           {completedInterviews.length} completed interview{completedInterviews.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -62,7 +62,7 @@ export default function InterviewHistory({ history, onBack }: InterviewHistoryPr
       {/* Interview List */}
       {completedInterviews.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
-          <p className="text-gray-500 mb-4">No completed interviews yet</p>
+          <p className="text-gray-500 mb-4 dark:text-gray-300">No completed interviews yet</p>
           <button
             onClick={onBack}
             className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"

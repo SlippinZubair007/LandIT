@@ -24,7 +24,7 @@ export default function InterviewFeedback({
   if (!feedback || !interview) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="text-gray-600">Loading feedback...</div>
+        <div className="text-gray-700">Loading feedback...</div>
       </div>
     );
   }
@@ -53,12 +53,12 @@ export default function InterviewFeedback({
       <div className="mb-6">
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          className="flex items-center gap-2 text-gray-800 dark:text-gray-300 hover:text-gray-900 transition-colors mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Interview feedback</span>
         </button>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-800 dark:text-gray-300">
           {new Date(
             "completedAt" in interview && interview.completedAt
               ? interview.completedAt

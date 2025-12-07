@@ -28,8 +28,8 @@ export const QuestionList: React.FC<QuestionListProps> = ({
   if (questions.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 mb-4">No questions available for this difficulty.</p>
-        <p className="text-sm text-gray-500">Click "Generate Questions" to create new ones!</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">No questions available for this difficulty.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-300">Click "Generate Questions" to create new ones!</p>
       </div>
     );
   }

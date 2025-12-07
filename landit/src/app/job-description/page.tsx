@@ -65,22 +65,23 @@ export default function JobDescriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-purple-100">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="min-h-screen  bg-gradient-to-b from-purple-400 via-purple-200 to-white dark:from-purple-900 dark:via-purple-700 dark:to-black
+      transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-6 py-8 -mt-6">
         {/* Header Section */}
         <div className="mb-8">
           <button
             onClick={() => (window.location.href = "/dashboard")}
-            className="flex items-center gap-2 text-gray-700 mb-4 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-gray-700 mb-4 hover:text-gray-900 dark:text-gray-300 transition-colors"
           >
             <span>←</span> Dashboard
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-gray-300 ">
                 Job Descriptions
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Manage your target job positions for interview preparation
               </p>
             </div>
