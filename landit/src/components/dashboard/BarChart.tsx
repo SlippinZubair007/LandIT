@@ -1,15 +1,26 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-interface BarChartProps {
-  data: {
-    questions: number;
-    correct: number;
-    incorrect: number;
-  };
-}
+export const BarChart: React.FC = () => {
+  const [data, setData] = useState({
+    questions: 0,
+    correct: 0,
+    incorrect: 0,
+  });
 
-export const BarChart: React.FC<BarChartProps> = ({ data }) => {
+  // Generate random data ONLY on the client
+  useEffect(() => {
+    const randomQuestions = Math.floor(Math.random() * 20) + 5;
+    const randomCorrect = Math.floor(Math.random() * randomQuestions);
+    const randomIncorrect = randomQuestions - randomCorrect;
+
+    setData({
+      questions: randomQuestions,
+      correct: randomCorrect,
+      incorrect: randomIncorrect,
+    });
+  }, []);
+
   const maxValue = Math.max(data.questions, data.correct, data.incorrect) || 1;
 
   return (
