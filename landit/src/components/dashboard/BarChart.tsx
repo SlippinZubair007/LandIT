@@ -1,26 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 
-export const BarChart: React.FC = () => {
-  const [data, setData] = useState({
-    questions: 0,
-    correct: 0,
-    incorrect: 0,
-  });
+interface BarChartProps {
+  data: {
+    questions: number;
+    correct: number;
+    incorrect: number;
+  };
+}
 
-  useEffect(() => {
-    // Generate random values for demonstration
-    const randomQuestions = Math.floor(Math.random() * 20) + 5; // 5-24
-    const randomCorrect = Math.floor(Math.random() * randomQuestions);
-    const randomIncorrect = randomQuestions - randomCorrect;
-
-    setData({
-      questions: randomQuestions,
-      correct: randomCorrect,
-      incorrect: randomIncorrect,
-    });
-  }, []);
-
+export const BarChart: React.FC<BarChartProps> = ({ data }) => {
   const maxValue = Math.max(data.questions, data.correct, data.incorrect) || 1;
 
   return (
@@ -30,10 +19,16 @@ export const BarChart: React.FC = () => {
           <div style={{ height: "160px" }} className="flex items-end">
             <div
               className="w-16 bg-purple-500 rounded-t-lg transition-all min-h-[4px]"
-              style={{ height: `${(data[key as keyof typeof data] / maxValue) * 100}%` }}
+              style={{
+                height: `${
+                  (data[key as keyof typeof data] / maxValue) * 100
+                }%`,
+              }}
             />
           </div>
-          <span className="text-xs text-gray-600">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+          <span className="text-xs text-gray-600">
+            {key.charAt(0).toUpperCase() + key.slice(1)}
+          </span>
         </div>
       ))}
     </div>
