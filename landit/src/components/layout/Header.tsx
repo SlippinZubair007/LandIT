@@ -17,7 +17,7 @@ export const Header = () => {
         {/* Logo */}
         <div className="flex items-center gap-3">
           <Image 
-            src="/figma/logo.png" 
+            src="/Figma/logo.png" 
             alt="LandIT Logo" 
             width={40} 
             height={40}

@@ -2,6 +2,7 @@
 import React from "react";
 import { BarChart } from "./BarChart";
 import { PieChart } from "./PieChart";
+import { BarChart2Icon } from "lucide-react";
 
 interface ActivitySectionProps {
   barData: { questions: number; correct: number; incorrect: number };
@@ -19,7 +20,7 @@ export const ActivitySection: React.FC<ActivitySectionProps> = ({ barData, pieDa
           <span className="text-xs text-gray-600">100</span>
         </div>
         <div className="w-full h-[250px]">
-         <BarChart data={barData} />
+         <BarChart/>
         </div>
       </div>
       <div className="flex justify-center">
